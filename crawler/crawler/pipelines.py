@@ -5,7 +5,6 @@
 
 
 # useful for handling different item types with a single interface
-import json
 
 from dateutil import parser
 
@@ -42,9 +41,12 @@ def preprocessing(item):
 
 
 class CrawlerPipeline:
+    def __init__(self):
+        self.info_db = None
+
     def process_item(self, item, spider):
         news = preprocessing(item)
-        docId = self.infodb.insert_news(
+        self.info_db.insert_news(
             news["title"],
             news["date"],
             news["content"],
@@ -52,25 +54,13 @@ class CrawlerPipeline:
             news["url"],
             news["cls"],
         )
-        news["id"] = docId
-        if docId < 10:
-            print()
-        json.dump(news, self.f, indent=2)
-        if docId < 10:
-            print()
-        # newsJson = json.dumps(news, indent=1)
-        self.f.write(",\n")
         return item
 
     def open_spider(self, spider):
-        self.f = open("../../data/news.json", "w", newline="\n")
-        self.f.write("[")
-        self.infodb = NewsDB()
-        self.infodb.open_db()
-        self.infodb.create_news_table()
-        self.infodb.create_index_table()
+        self.info_db = NewsDB()
+        self.info_db.open_db()
+        self.info_db.create_news_table()
+        self.info_db.create_index_table()
 
     def close_spider(self, spider):
-        self.infodb.close_db()
-        self.f.write("{}]")
-        self.f.close()
+        self.info_db.close_db()

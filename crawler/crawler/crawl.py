@@ -11,5 +11,5 @@ def crawl_all(spider_names=SPIDER_NAMES):
     process.start()
 
 
-def crawl_news():
+if __name__ == "__main__":
     crawl_all(SPIDER_NAMES)

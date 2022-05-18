@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route("/api/boolean", methods=["GET"])
 def boolean_search_api():
     keywords = request.args.get("keyword")
-    keywords = keywords.split()
+    keywords = keywords.split("_")
     docs = boolean_search(keywords)
     resp = []
     for doc in docs:
