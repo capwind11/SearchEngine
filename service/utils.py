@@ -76,3 +76,70 @@ def load_inverted_index(path=""):
     with open(path, "r") as f:
         index = json.load(f)
     return index
+
+
+def transform_postfix(infix):
+    i = 0
+    infix = infix.replace(" ", "")
+    stk = []
+    postfix = []
+    while i < len(infix):
+        if infix[i] != "|" and infix[i] != "&" and infix[i] != "(" and infix[i] != ")":
+            j = 0
+            word = ""
+            while (
+                i < len(infix)
+                and infix[i] != "|"
+                and infix[i] != "&"
+                and infix[i] != "("
+                and infix[i] != ")"
+            ):
+                word += infix[i]
+                i += 1
+                j += 1
+            postfix.append(word)
+        elif infix[i] == "|" or infix[i] == "&" or infix[i] == "(":
+            if infix[i] == "|":
+                while stk and stk[-1] != "(":
+                    postfix.append(stk[-1])
+                    stk.pop()
+            stk.append(infix[i])
+            i += 1
+        elif infix[i] == ")":
+            while stk:
+                if stk[-1] == "(":
+                    stk.pop()
+                    break
+                postfix.append(stk[-1])
+                stk.pop()
+            i += 1
+    while stk:
+        postfix.append(stk[-1])
+        stk.pop()
+
+    return postfix
+
+
+def test_transform_postfix():
+    transform_postfix("a&b|c")
+
+
+def test_cal():
+    postfix = "6  5  2  3  + 8 * + 3  +  *".split()
+    stk = []
+    for elem in postfix:
+        if elem != "+" and elem != "*":
+            print(elem, " ")
+            stk.append(int(elem))
+        elif elem == "+":
+            tmp = stk[-1] + (stk[-2])
+            stk.pop()
+            stk.pop()
+            stk.append(tmp)
+        else:
+            tmp = stk[-1] * (stk[-2])
+            stk.pop()
+            stk.pop()
+            stk.append(tmp)
+    print(stk[-1])
+    return stk[-1]

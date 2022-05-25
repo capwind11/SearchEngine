@@ -59,11 +59,11 @@ class NewsDB:
         self.conn.commit()
         return all_news
 
-    def query_by_specific_info(self, news_date, source):
-        sql = """select id,title,url from news where date= ? and source = ?"""
+    def query_by_specific_info(self, news_date1, news_date2, source):
+        sql = """select id,title,url,date from news where date>= ? and date<= ? and source = ?"""
 
         # 执行语句
-        results = self.cursor.execute(sql, (news_date, source))
+        results = self.cursor.execute(sql, (news_date1, news_date2, source))
 
         # 遍历打印输出
         all_news = results.fetchall()
