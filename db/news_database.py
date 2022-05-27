@@ -44,9 +44,46 @@ class NewsDB:
         self.conn.commit()
         return result.fetchall()
 
+    def query_specific(self, doc_ids, date_begin, date_end, source):
+        if source and date_begin and date_end:
+            sql = (
+                "select * from news where id in ("
+                + ",".join(str(doc_id) for doc_id in doc_ids)
+                + ")"
+                + " and date>= ? and date<= ? and source = ?"
+            )
+            results = self.cursor.execute(sql, (date_begin, date_end, source))
+        elif source:
+            sql = (
+                "select * from news where id in ("
+                + ",".join(str(doc_id) for doc_id in doc_ids)
+                + ")"
+                + " and source = ?"
+            )
+            results = self.cursor.execute(sql, (source,))
+        elif date_begin and date_end:
+            sql = (
+                "select * from news where id in ("
+                + ",".join(str(doc_id) for doc_id in doc_ids)
+                + ")"
+                + " and date>= ? and date<= ? "
+            )
+            results = self.cursor.execute(sql, (date_begin, date_end))
+
+        else:
+            sql = (
+                "select * from news where id in ("
+                + ",".join(str(doc_id) for doc_id in doc_ids)
+                + ")"
+            )
+            results = self.cursor.execute(sql)
+        all_news = results.fetchall()
+        self.conn.commit()
+        return all_news
+
     def query_by_doc_id(self, doc_ids):
         sql = (
-            "select id,title,url from news where id in ("
+            "select * from news where id in ("
             + ",".join(str(doc_id) for doc_id in doc_ids)
             + ")"
         )
@@ -60,7 +97,7 @@ class NewsDB:
         return all_news
 
     def query_by_specific_info(self, news_date1, news_date2, source):
-        sql = """select id,title,url,date from news where date>= ? and date<= ? and source = ?"""
+        sql = """select id,title,content, source, url,date from news where date>= ? and date<= ? and source = ?"""
 
         # 执行语句
         results = self.cursor.execute(sql, (news_date1, news_date2, source))

@@ -8,10 +8,19 @@ from service.utils import transform_postfix
 
 
 # boolean搜索
-def boolean_search(statement):
-    if len(statement) == 0:
+def search(keywords, source=None, date_begin=None, date_end=None, interval=None):
+    if len(keywords) == 0:
         return set()
-    postfix = transform_postfix(statement)
+    postfix = transform_postfix(keywords)
+    if (not date_begin or not date_end) and interval:
+        date_end = datetime.datetime.now()
+        n, unit = interval.split()
+        if unit == "week":
+            date_begin = date_end - datetime.timedelta(weeks=int(n))
+        elif unit == "day":
+            date_begin = date_end - datetime.timedelta(days=int(n))
+        elif unit == "month":
+            date_begin = date_end - datetime.timedelta(days=30 * int(n))
     stk = []
     for elem in postfix:
         if elem != "|" and elem != "&":
@@ -27,27 +36,9 @@ def boolean_search(statement):
             stk.pop()
             stk.append(tmp)
     doc_ids = stk[-1]
-    docs = global_db.query_by_doc_id(doc_ids)
+    docs = global_db.query_specific(doc_ids, date_begin, date_end, source)
     return docs
 
 
-# 距离今天interval时间段内的新闻
-def specific_search_by_date_interval(interval, source=""):
-    now = datetime.datetime.now()
-    n, unit = interval.split()
-    if unit == "week":
-        previous_date = now - datetime.timedelta(weeks=int(n))
-    elif unit == "day":
-        previous_date = now - datetime.timedelta(days=int(n))
-    elif unit == "month":
-        previous_date = now - datetime.timedelta(days=30 * int(n))
-    return global_db.query_by_specific_info(previous_date, now, source)
-
-
-# 根据日期区间查找，从date1到date2的所有新闻
-def specific_search_by_period(date1, date2, source=""):
-    return global_db.query_by_specific_info(date1, date2, source)
-
-
 def test_boolean_and():
-    print(boolean_search("senior&official|test"))
+    print(search("senior&official|test"))
