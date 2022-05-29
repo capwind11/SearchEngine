@@ -51,6 +51,7 @@ def build_inverted_index(path=""):
         title = item["title"].translate(punc_table)
         title = title.translate(num_table)
         for word in set(content.split() + title.split()):
+            word = lemmatize_stem_word(str.lower(word))
             if word not in indexes:
                 indexes[word] = []
             indexes[word].append(item["id"])
@@ -68,8 +69,9 @@ def build_inverted_index(path=""):
     global_db.insert_inverted_index(index)
     del inverted_index
 
+    # 加载倒排索引
 
-# 加载倒排索引
+
 def load_inverted_index(path=""):
     if not path:
         path = os.path.dirname(__file__) + "/../entity/inverted_index.json"
@@ -120,8 +122,47 @@ def transform_postfix(infix):
     return postfix
 
 
+import nltk
+from nltk import pos_tag
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+
+wnl = WordNetLemmatizer()
+nltk.download("wordnet")
+nltk.download("averaged_perceptron_tagger")
+
+from nltk.stem.porter import PorterStemmer
+
+porter_stemmer = PorterStemmer()
+
+
+def get_wordnet_pos(tag):
+    if tag.startswith("J"):
+        return wordnet.ADJ
+    elif tag.startswith("V"):
+        return wordnet.VERB
+    elif tag.startswith("N"):
+        return wordnet.NOUN
+    elif tag.startswith("R"):
+        return wordnet.ADV
+    else:
+        return None
+
+
+def lemmatize_stem_word(word):
+    pos = get_wordnet_pos(pos_tag([word])[0][1])
+    if not pos:
+        return word
+    return porter_stemmer.stem(wnl.lemmatize(word, pos))
+
+
+def test_lematization():
+    print(lemmatize_stem_word("decapitate"))
+    print(lemmatize_stem_word("decapitates"))
+
+
 def test_transform_postfix():
-    transform_postfix("a&b|c")
+    transform_postfix("society|develop&China")
 
 
 def test_cal():

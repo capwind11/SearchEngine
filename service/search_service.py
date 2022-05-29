@@ -2,15 +2,14 @@
 import datetime
 
 from entity.global_entity import *
-
 # 目前只实现了and功能
-from service.utils import transform_postfix
+from service.utils import transform_postfix, lemmatize_stem_word
 
 
 # boolean搜索
 def search(keywords, source=None, date_begin=None, date_end=None, interval=None):
     if len(keywords) == 0:
-        return set()
+        return None
     postfix = transform_postfix(keywords)
     if (not date_begin or not date_end) and interval:
         date_end = datetime.datetime.now()
@@ -22,9 +21,17 @@ def search(keywords, source=None, date_begin=None, date_end=None, interval=None)
         elif unit == "month":
             date_begin = date_end - datetime.timedelta(days=30 * int(n))
     stk = []
+    all_doc_ids = global_db.query_doc_ids()
     for elem in postfix:
         if elem != "|" and elem != "&":
-            stk.append(set(global_db.query_doc_ids_by_word(elem)))
+            if elem[0] == "-":
+                word = lemmatize_stem_word(elem[1:])
+                stk.append(
+                    all_doc_ids.difference(global_db.query_doc_ids_by_word(word))
+                )
+            else:
+                word = lemmatize_stem_word(elem)
+                stk.append(global_db.query_doc_ids_by_word(word))
         elif elem == "|":
             tmp = stk[-1].union(stk[-2])
             stk.pop()

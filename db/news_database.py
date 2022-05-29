@@ -96,18 +96,31 @@ class NewsDB:
         self.conn.commit()
         return all_news
 
-    def query_by_specific_info(self, news_date1, news_date2, source):
-        sql = """select id,title,content, source, url,date from news where date>= ? and date<= ? and source = ?"""
+    def query_by_specific_info(self, begin, end, source):
+
+        sql = "select * from news where date>= ? and date<= ? and source = ?"
 
         # 执行语句
-        results = self.cursor.execute(sql, (news_date1, news_date2, source))
+        results = self.cursor.execute(sql, (begin, end, source))
 
         # 遍历打印输出
         all_news = results.fetchall()
         self.conn.commit()
         return all_news
 
+    def query_doc_ids(self):
+        sql = "select id from news"
+        # 执行语句
+        results = self.cursor.execute(sql)
+
+        # 遍历打印输出
+        doc_ids = results.fetchall()
+        self.conn.commit()
+
+        return set([item[0] for item in doc_ids])
+
     def query_doc_ids_by_word(self, word):
+
         sql = "select doc_id from inverted_index where word= ?"
         # 执行语句
         results = self.cursor.execute(sql, (word,))
@@ -115,10 +128,12 @@ class NewsDB:
         # 遍历打印输出
         doc_id = results.fetchone()
         self.conn.commit()
+        if not doc_id:
+            return set()
         return set(map(int, doc_id[0].split(",")))
 
     def insert_inverted_index(self, inverted_index):
-        stm = """insert OR IGNORE into inverted_index(word, doc_id) values(
+        stm = """REPLACE INTO inverted_index(word, doc_id) values(
               ?,?)"""
         self.cursor.executemany(stm, inverted_index)
         self.conn.commit()

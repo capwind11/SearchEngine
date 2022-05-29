@@ -1,6 +1,8 @@
-import scrapy
 import json
-from ..items import NewsItem, create_news_item
+
+import scrapy
+
+from ..items import create_news_item
 
 
 class FoxnewsSpider(scrapy.Spider):
@@ -13,7 +15,7 @@ class FoxnewsSpider(scrapy.Spider):
     start_urls = []
     for domain in domains:
         for i in range(100):
-            start_urls.append(api.format(domain, 30, 30*i))
+            start_urls.append(api.format(domain, 30, 30 * i))
 
     def parse(self, response):
         newsList = json.loads(response.text)
@@ -22,7 +24,7 @@ class FoxnewsSpider(scrapy.Spider):
             if 'video' in url or url in self.url_set:
                 continue
             self.url_set.add(url)
-            yield scrapy.Request(self.root+url, callback=self.parse_content)
+            yield scrapy.Request(self.root + url, callback=self.parse_content)
 
     def parse_content(self, response):
         title = response.xpath("//h1[@class='headline']/text()").extract()
@@ -30,6 +32,5 @@ class FoxnewsSpider(scrapy.Spider):
         content = response.xpath("//div[@class='article-body']/p/text()").extract()
         cls = response.xpath("//div[@class='eyebrow']/a/text()").extract()
 
-        # item['cls'] = "".join(cls[1:])
         item = create_news_item(title, time, content, self.name, response.request.url, cls)
         yield item

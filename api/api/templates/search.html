@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>News Search Engine</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+        }
+        html, body {
+            height: 100%;
+        }
+        .wrapper {
+            min-height: 100%;
+            height: auto !important;
+            height: 100%;
+            margin: 0 auto -25px;
+        }
+
+        .footer, .push {
+            height: 25px;
+        }
+
+        table.gridtable {
+            font-family: verdana, arial, sans-serif;
+            font-size: 11px;
+            color: #333333;
+            border-width: 1px;
+            border-color: #666666;
+            border-collapse: collapse;
+            margin: 5px auto;
+        }
+
+        table.gridtable th {
+            border-width: 1px;
+            padding: 8px;
+            border-style: solid;
+            border-color: #666666;
+            background-color: #dedede;
+        }
+
+        table.gridtable td {
+            border-width: 1px;
+            padding: 8px;
+            border-style: solid;
+            border-color: #666666;
+            background-color: #ffffff;
+        }
+
+        .middle {
+            text-align: center;
+            margin: 0 auto;
+            width: 800px;
+            height: auto;
+        }
+
+        .center {
+            text-align: left;
+            margin: 0 auto;
+            width: 1200px;
+            height: auto;
+
+        }
+
+        .info {
+            font-size: 12px;
+            text-align: center;
+            line-height: 20px;
+            padding: 40px;
+        }
+
+        .info a {
+            text-align: left;
+            margin: 0 10px;
+            text-decoration: none;
+            color: green;
+        }
+        .title-init {
+            padding: 120px 0 30px;
+        }
+
+        .searchText {
+            width: 690px;
+            height: 35px;
+            line-height: 35px;
+            font-size: 18px;
+            padding: 5px 9px;
+        }
+
+        .searchText:hover {
+            border-width: 1px;
+            border-color: #a0a0a0 #b9b9b9 #b9b9b9 #b9b9b9 !important;
+        }
+
+        .searchBtn {
+            width: 100px;
+            height: 35px;
+            line-height: 27px;
+            background-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#f1f1f1));
+            background-image: -webkit-linear-gradient(top, #f5f5f5, #f1f1f1);
+            -webkit-border-radius: 2px;
+            -webkit-user-select: none;
+            background-color: #f2f2f2;
+            border: 1px solid #f2f2f2;
+            border-radius: 2px;
+            color: #757575;
+            cursor: default;
+            font-family: arial, sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+            margin: 11px 4px;
+            min-width: 54px;
+            padding: 0 16px;
+            text-align: center;
+        }
+
+        .searchBtn:hover {
+            background-image: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#f1f1f1));
+            background-image: -webkit-linear-gradient(top, #f8f8f8, #f1f1f1);
+            -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            background-color: #f8f8f8;
+            background-image: linear-gradient(top, #f8f8f8, #f1f1f1);
+            background-image: -o-linear-gradient(top, #f8f8f8, #f1f1f1);
+            border: 1px solid #c6c6c6;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            color: #222;
+        }
+
+        .copyright {
+            color: #666;
+            text-align: center;
+        }
+
+        .queryForm {
+            background-color: #f1f1f1;
+            border-bottom: 1px solid #666;
+            border-color: #e5e5e5;
+            padding: 0 20px;
+        }
+
+        .result-item {
+            padding: 10px 10px 10px 40px;
+        }
+
+        #tads a, #tadsb a, #res a, #rhs a, #taw a {
+            text-decoration: none;
+        }
+
+        a:link {
+            cursor: pointer;
+        }
+
+        a:link, #prs a:visited, #prs a:active {
+            color: #353535;
+        }
+
+        .cite {
+            color: #006621;
+            font-style: normal;
+            font-size: small;
+            line-height: 18px;
+        }
+
+        .item-url {
+            text-decoration: none;
+        }
+
+        .item-content {
+            color: #545454;
+            font-size: small;
+            line-height: 16px;
+        }
+
+        #resultStats {
+            line-height: 43px;
+            -webkit-transition: all 220ms ease-in-out;
+            color: #808080;
+            padding: 0 8px 0 16px;
+            font-size: small;
+        }
+
+        .copyright {
+            color: #666;
+            text-align: center;
+        }
+
+        .middle-search {
+            text-align: center;
+            margin: 0 auto;
+            height: auto;
+        }
+        p{
+            margin:0px;
+            font-family:Arial;
+        }
+        .title{
+            padding-bottom:0px;
+            font-size:26px;
+            color : #2910ab
+        }
+        p.content{
+            padding-top:3px;
+            font-size:13px;
+            line-height:18px;
+        }
+        p.link{
+            font-size:13px;
+            padding-bottom:25px;
+            color:#008000;
+        }
+    </style>
+</head>
+<body>
+    <div id="container" class="wrapper">
+        <div id="header" class="middle">
+            <h1 class="title-init">News Search</h1>
+            <form name="search" action="/search/" method="POST">
+                <div>
+                    {% if key %}
+                        <table style="width:100%;border:none;">
+                            <tr>
+                                <td><input type="text" name="key_word" value={{key}} class="searchText"/></td>
+                                <td><input type="submit" value="search" class="searchBtn"/></td>
+                            </tr>
+                        </table>
+                     {% else %}
+                        <table style="width:100%;border:none;">
+                            <tr>
+                                <td><input type="text" name="key_word" class="searchText"/></td>
+                                <td><input type="submit" value="search" class="searchBtn"/></td>
+                            </tr>
+                        </table>
+                    {% endif %}
+                </div>
+                <div>
+                    start time：<input id="start_time" type="date" name="start_time" value={{start_time}} />
+                    end time：<input id="end_time"type="date" name="end_time" value={{end_time}} />
+                    <br>
+                    source:
+                    <input {{source[0]}} type="checkbox" name="foxnews" id="s1" value="foxnews" >Fox News
+                    <input {{source[1]}} type="checkbox" name="apnews" id="s2" value="apnews" >AP News
+                    <input {{source[2]}} type="checkbox" name="chinadaily" id="s3" value="chinadaily" >China Daily
+                    <input {{source[3]}} type="checkbox" name="usatoday" id="s4" value="source" >USA today
+                    <input {{source[4]}} type="checkbox" name="globaltimes" id="s5" value="source" >Global Times
+                </div>
+            </form>
+        </div>
+        <br>
+        <hr/>
+        <br>
+        <div id="results" class="center">
+            {% block high_search%}
+            {% endblock %}
+            {% if error%}
+                {% for doc in docs%}
+                    <div class=".result-item" data-hveid="27">
+<!--                        <h3 style="color:#2910ab"><a href="/search/{{doc.id}}/" target="_blank" class="item-url"> {{doc.title}}</a></h3>-->
+                        <p class="title" style="color:#2440b3"><a href="/search/{{doc.id}}/" target="_blank">{{doc.title}}</a></p>
+                        <p style="color:#545454">date:{{doc.date}} &nbsp; source:{{doc.source}} &nbsp; class:{{doc.class}}<br/></p>
+                        <div>
+                            <p class="p.content"> {{ doc.snippet }}</p>
+                        </div>
+<!--                    <p class="cite"> <a href="{{ doc.url }}" style="white-space:nowrap" target="_blank">{{ doc.url }}</a></p>-->
+                        <p style="color:#0e8d54"> <a href="{{ doc.url }}" style="white-space:nowrap" target="_blank" >{{ doc.url }}</a></p>
+                    </div>
+                <br/>
+                {% endfor %}
+            {% block next %}
+            <ul>
+                {% for i in page %}
+                    <a href="/search/page/{{i}}/">{{i}}</a>&nbsp;
+                {% endfor %}
+            </ul>
+            {% endblock %}
+            {% else %}
+                <p>对不起，没有您搜索的网页！</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+<!--    <script type="text/javascript">-->
+<!--        var start = document.getElementById("end_time");-->
+<!--        var date = new Date();-->
+<!--        var month_t = date.getMonth().toString();-->
+<!--        if (date.getMonth() + 1 < 10)-->
+<!--            month_t = '0' + (date.getMonth() + 1);-->
+
+<!--        var day_t = date.getDate().toString();-->
+<!--        if (date.getDate() < 10)-->
+<!--            day_t = '0' + (date.getDate() + 1)-->
+
+<!--        var dateString = date.getFullYear() + "-" + (month_t) + "-" + day_t;-->
+<!--        start.value = dateString;-->
+<!--    </script>-->
+
+</html>
