@@ -75,7 +75,7 @@ def build_inverted_index(path=""):
         title = item["title"].translate(punc_table)
         title = title.translate(num_table)
         for word in set(content.split() + title.split()):
-            # word = lemmatize_stem_word(str.lower(word))
+            word = lemmatize_stem_word(str.lower(word))
             if word not in indexes:
                 indexes[word] = []
             indexes[word].append(item["id"])
@@ -93,9 +93,8 @@ def build_inverted_index(path=""):
     global_db.insert_inverted_index(index)
     del inverted_index
 
-    # 加载倒排索引
 
-
+# 加载倒排索引
 def load_inverted_index(path=""):
     if not path:
         path = os.path.dirname(__file__) + "/../entity/inverted_index.json"
@@ -104,6 +103,7 @@ def load_inverted_index(path=""):
     return index
 
 
+# 转换为后缀波兰表达式
 def transform_postfix(infix):
     i = 0
     infix = infix.replace(" ", "")
@@ -170,8 +170,15 @@ def lemmatize_stem_word(word):
     return porter_stemmer.stem(wnl.lemmatize(word, pos))
 
 
-def search_by_ids_specific(
-    doc_ids, source=None, date_begin=None, date_end=None, interval=None, order=False
+# 根据针对信息搜索
+def search_by_specific_info(
+    doc_ids,
+    source=None,
+    date_begin=None,
+    date_end=None,
+    interval=None,
+    cls=None,
+    order=False,
 ):
     if (not date_begin or not date_end) and interval:
         date_end = datetime.datetime.now()
@@ -183,11 +190,11 @@ def search_by_ids_specific(
         elif unit == "month":
             date_begin = date_end - datetime.timedelta(days=30 * int(n))
     if not order:
-        docs = global_db.query_specific(doc_ids, date_begin, date_end, source)
+        docs = global_db.query_specific(doc_ids, date_begin, date_end, source, cls)
     else:
         docs = []
         for i in doc_ids:
-            res = global_db.query_by_id(i)
+            res = global_db.query_specific([i], date_begin, date_end, source, cls)
             if res:
-                docs.append(res)
+                docs += res
     return docs

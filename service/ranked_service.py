@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from entity.global_entity import global_db
-from service.utils import search_by_ids_specific
+from service.utils import search_by_specific_info
 
 
 def process_tfidf():
@@ -83,9 +83,14 @@ def get_ranked_ids(query, ids=None, minimum_hits=0):
         return rank_list
 
 
-def rank_search(keywords, source=None, date_begin=None, date_end=None, interval=None):
+# 根据以下条件，执行rank搜索
+def rank_search(
+        keywords, source=None, date_begin=None, date_end=None, interval=None, cls=None
+):
     if len(keywords) == 0:
         return None
-    doc_ids = [i + 1 for i in get_ranked_ids(keywords)[:200]]
+    doc_ids = [i + 1 for i in get_ranked_ids(keywords)[:1000]]
 
-    return search_by_ids_specific(doc_ids, source, date_begin, date_end, interval, True)
+    return search_by_specific_info(
+        doc_ids, source, date_begin, date_end, interval, cls, True
+    )

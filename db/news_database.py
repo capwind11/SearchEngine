@@ -30,7 +30,9 @@ class NewsDB:
     def get_conn(self):
         return self.conn
 
+    # 插入新闻
     def insert_news(self, title, time, content, source, url, cls):
+
         stm = """insert OR IGNORE into news(title, date ,content, source, url, cls) values(
               ?,?,?,?,?,?)"""
         self.cursor.execute(stm, (title, time, content, source, url, cls))
@@ -38,72 +40,30 @@ class NewsDB:
         self.conn.commit()
         return docId
 
+    # 查询全部文档
     def query_all_docs(self):
 
         result = self.cursor.execute("select * from news")
         self.conn.commit()
         return result.fetchall()
 
-    def query_specific(self, doc_ids, date_begin, date_end, source):
-        ids_str = ",".join(str(doc_id) for doc_id in doc_ids)
-        if source and date_begin and date_end:
-            sql = (
-                "select * from news where id in ("
-                + ids_str
-                + ")"
-                + " and date>= ? and date<= ? and source = ?"
-            )
-            results = self.cursor.execute(sql, (date_begin, date_end, source))
-        elif source:
-            sql = "select * from news where id in (" + ids_str + ")" + " and source = ?"
-            results = self.cursor.execute(sql, (source,))
-        elif date_begin and date_end:
-            sql = (
-                "select * from news where id in ("
-                + ids_str
-                + ")"
-                + " and date>= ? and date<= ?"
-            )
-            results = self.cursor.execute(sql, (date_begin, date_end))
-
-        else:
-            sql = "select * from news where id in (" + ids_str + ")" + ""
-            results = self.cursor.execute(sql)
-        all_news = results.fetchall()
-        self.conn.commit()
-        return all_news
-
-    def query_by_id(self, doc_id):
-        sql = "select * from news where id = ?"
-        results = self.cursor.execute(sql, (int(doc_id),))
-
-        return results.fetchone()
-
-    def query_by_doc_id(self, doc_ids):
-
+    # 根据doc_id的列表，源和日期进行查询
+    def query_specific(self, doc_ids, date_begin, date_end, source, cls):
         ids_str = ",".join(str(doc_id) for doc_id in doc_ids)
         sql = "select * from news where id in (" + ids_str + ")"
-
-        # 执行语句
+        if cls:
+            sql += " and cls in ('{}')".format(cls)
+        if source:
+            sql += " and source = '{}'", format(source)
+        if date_begin and date_end:
+            sql += " and date>= '{}' and date<= '{}'".format(date_begin, date_end)
+        print(sql)
         results = self.cursor.execute(sql)
-
-        # 遍历打印输出
         all_news = results.fetchall()
         self.conn.commit()
         return all_news
 
-    def query_by_specific_info(self, begin, end, source):
-
-        sql = "select * from news where date>= ? and date<= ? and source = ?"
-
-        # 执行语句
-        results = self.cursor.execute(sql, (begin, end, source))
-
-        # 遍历打印输出
-        all_news = results.fetchall()
-        self.conn.commit()
-        return all_news
-
+    # 查询全部doc_id
     def query_doc_ids(self):
         sql = "select id from news"
         # 执行语句
@@ -115,6 +75,7 @@ class NewsDB:
 
         return set([item[0] for item in doc_ids])
 
+    # 从倒排索引中根据word进行查询
     def query_doc_ids_by_word(self, word):
 
         sql = "select doc_id from inverted_index where word= ?"
@@ -128,6 +89,7 @@ class NewsDB:
             return set()
         return set(map(int, doc_id[0].split(",")))
 
+    # 插入倒排索引
     def insert_inverted_index(self, inverted_index):
         stm = """REPLACE INTO inverted_index(word, doc_id) values(
               ?,?)"""
@@ -139,6 +101,7 @@ class NewsDB:
     doc= {“title”: “xxx”, “time”: “xxx”, “content”: “xxx”, “source”: “xxx” , “url”: “xxx”}
     """
 
+    # 重新初始化两个表
     def create_news_table(self):
 
         drop_statement = """

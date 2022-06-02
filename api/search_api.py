@@ -3,8 +3,8 @@ import datetime
 from flask import Flask, request, render_template
 from flask import jsonify
 
+from service.boolean_service import *
 from service.ranked_service import rank_search
-from service.search_service import *
 
 #####################################################################################################################
 ###################################################以下部分为页面交互部分################################################
@@ -71,7 +71,7 @@ def search_action():
             # 这里等待api改成list
             # docs = search(keywords, source, start_time, end_time)
             s = sourcelist[0]
-            docs = search(keywords, s, start_time, end_time)
+            docs = boolean_search(keywords, s, start_time, end_time)
             global resp, page
             resp = []
             for doc in docs:
@@ -166,7 +166,7 @@ def high_search(key):
         # 排序，按照Boolean、Date、Ranked,等待修改api
         # docs = search_rank(keywords, source, start_time, end_time, checked)
         s = source[0]
-        docs = search(keywords, s, start_time, end_time)
+        docs = boolean_search(keywords, s, start_time, end_time)
         resp = []
         for doc in docs:
             if len(doc[2]) >= 300:
@@ -208,13 +208,14 @@ def high_search(key):
 
 
 @app.route("/api/search", methods=["GET"])
-def search_api():
+def boolean_search_api():
     keywords = request.args.get("keyword")
     date_begin = request.args.get("begin")
     date_end = request.args.get("end")
     interval = request.args.get("interval")
     source = request.args.get("source")
-    docs = search(keywords, source, date_begin, date_end, interval)
+    cls = request.args.get("cls")
+    docs = boolean_search(keywords, source, date_begin, date_end, interval, cls)
     resp = []
     for doc in docs:
         resp.append(
@@ -237,7 +238,9 @@ def rank_search_api():
     date_end = request.args.get("end")
     interval = request.args.get("interval")
     source = request.args.get("source")
-    docs = rank_search(keywords, source, date_begin, date_end, interval)
+    cls = request.args.get("cls")
+
+    docs = rank_search(keywords, source, date_begin, date_end, interval, cls)
 
     resp = []
     for doc in docs:
