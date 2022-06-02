@@ -3,12 +3,36 @@ import os
 import string
 
 # 用于构建倒排索引时，进行去除标点和数字等预处理操作
+from datetime import datetime
+
+from nltk import pos_tag
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+from nltk.stem.porter import PorterStemmer
+
 from entity.global_entity import global_db
 
 punc_dicts = {i: " " for i in string.punctuation}
 num_dicts = {i: "" for i in "0123456789"}
 punc_table = str.maketrans(punc_dicts)
 num_table = str.maketrans(num_dicts)
+
+
+def upload_news(path=""):
+    if not path:
+        path = os.path.dirname(__file__) + "/../entity/news.json"
+    f = open(path, "r")
+    news = json.load(f)
+
+    path = os.path.dirname(__file__) + "/../entity/pred.txt"
+    f = open(path, "r")
+    cls = [line.strip() for line in f.readlines()]
+    global_db.create_news_table()
+    global_db.create_index_table()
+    for i, doc in enumerate(news):
+        global_db.insert_news(
+            doc["title"], doc["time"], doc["content"], doc["source"], doc["url"], cls[i]
+        )
 
 
 # 从sql中加载新闻保存到本地json
@@ -51,7 +75,7 @@ def build_inverted_index(path=""):
         title = item["title"].translate(punc_table)
         title = title.translate(num_table)
         for word in set(content.split() + title.split()):
-            word = lemmatize_stem_word(str.lower(word))
+            # word = lemmatize_stem_word(str.lower(word))
             if word not in indexes:
                 indexes[word] = []
             indexes[word].append(item["id"])
@@ -122,17 +146,7 @@ def transform_postfix(infix):
     return postfix
 
 
-import nltk
-from nltk import pos_tag
-from nltk.corpus import wordnet
-from nltk.stem import WordNetLemmatizer
-
 wnl = WordNetLemmatizer()
-nltk.download("wordnet")
-nltk.download("averaged_perceptron_tagger")
-
-from nltk.stem.porter import PorterStemmer
-
 porter_stemmer = PorterStemmer()
 
 
@@ -156,31 +170,24 @@ def lemmatize_stem_word(word):
     return porter_stemmer.stem(wnl.lemmatize(word, pos))
 
 
-def test_lematization():
-    print(lemmatize_stem_word("decapitate"))
-    print(lemmatize_stem_word("decapitates"))
-
-
-def test_transform_postfix():
-    transform_postfix("society|develop&China")
-
-
-def test_cal():
-    postfix = "6  5  2  3  + 8 * + 3  +  *".split()
-    stk = []
-    for elem in postfix:
-        if elem != "+" and elem != "*":
-            print(elem, " ")
-            stk.append(int(elem))
-        elif elem == "+":
-            tmp = stk[-1] + (stk[-2])
-            stk.pop()
-            stk.pop()
-            stk.append(tmp)
-        else:
-            tmp = stk[-1] * (stk[-2])
-            stk.pop()
-            stk.pop()
-            stk.append(tmp)
-    print(stk[-1])
-    return stk[-1]
+def search_by_ids_specific(
+    doc_ids, source=None, date_begin=None, date_end=None, interval=None, order=False
+):
+    if (not date_begin or not date_end) and interval:
+        date_end = datetime.datetime.now()
+        n, unit = interval.split()
+        if unit == "week":
+            date_begin = date_end - datetime.timedelta(weeks=int(n))
+        elif unit == "day":
+            date_begin = date_end - datetime.timedelta(days=int(n))
+        elif unit == "month":
+            date_begin = date_end - datetime.timedelta(days=30 * int(n))
+    if not order:
+        docs = global_db.query_specific(doc_ids, date_begin, date_end, source)
+    else:
+        docs = []
+        for i in doc_ids:
+            res = global_db.query_by_id(i)
+            if res:
+                docs.append(res)
+    return docs

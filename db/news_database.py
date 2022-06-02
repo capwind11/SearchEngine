@@ -45,48 +45,44 @@ class NewsDB:
         return result.fetchall()
 
     def query_specific(self, doc_ids, date_begin, date_end, source):
+        ids_str = ",".join(str(doc_id) for doc_id in doc_ids)
         if source and date_begin and date_end:
             sql = (
                 "select * from news where id in ("
-                + ",".join(str(doc_id) for doc_id in doc_ids)
+                + ids_str
                 + ")"
                 + " and date>= ? and date<= ? and source = ?"
             )
             results = self.cursor.execute(sql, (date_begin, date_end, source))
         elif source:
-            sql = (
-                "select * from news where id in ("
-                + ",".join(str(doc_id) for doc_id in doc_ids)
-                + ")"
-                + " and source = ?"
-            )
+            sql = "select * from news where id in (" + ids_str + ")" + " and source = ?"
             results = self.cursor.execute(sql, (source,))
         elif date_begin and date_end:
             sql = (
                 "select * from news where id in ("
-                + ",".join(str(doc_id) for doc_id in doc_ids)
+                + ids_str
                 + ")"
-                + " and date>= ? and date<= ? "
+                + " and date>= ? and date<= ?"
             )
             results = self.cursor.execute(sql, (date_begin, date_end))
 
         else:
-            sql = (
-                "select * from news where id in ("
-                + ",".join(str(doc_id) for doc_id in doc_ids)
-                + ")"
-            )
+            sql = "select * from news where id in (" + ids_str + ")" + ""
             results = self.cursor.execute(sql)
         all_news = results.fetchall()
         self.conn.commit()
         return all_news
 
+    def query_by_id(self, doc_id):
+        sql = "select * from news where id = ?"
+        results = self.cursor.execute(sql, (int(doc_id),))
+
+        return results.fetchone()
+
     def query_by_doc_id(self, doc_ids):
-        sql = (
-            "select * from news where id in ("
-            + ",".join(str(doc_id) for doc_id in doc_ids)
-            + ")"
-        )
+
+        ids_str = ",".join(str(doc_id) for doc_id in doc_ids)
+        sql = "select * from news where id in (" + ids_str + ")"
 
         # 执行语句
         results = self.cursor.execute(sql)
