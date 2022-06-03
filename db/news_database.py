@@ -52,9 +52,9 @@ class NewsDB:
         ids_str = ",".join(str(doc_id) for doc_id in doc_ids)
         sql = "select * from news where id in (" + ids_str + ")"
         if cls:
-            sql += " and cls in ('{}')".format(cls)
+            sql += " and cls in ('{}')".format("','".join(cls))
         if source:
-            sql += " and source = '{}'", format(source)
+            sql += " and source in ('{}')".format("','".join(source))
         if date_begin and date_end:
             sql += " and date>= '{}' and date<= '{}'".format(date_begin, date_end)
         print(sql)

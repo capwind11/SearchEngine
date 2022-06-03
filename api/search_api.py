@@ -17,7 +17,7 @@ source = [
     'checked="true"',
     'checked="true"',
 ]
-checked = ['checked="true"', "", ""]
+# checked = ['checked="true"', "", ""]
 start_time = ""
 end_time = (datetime.date.today()).strftime("%Y-%m-%d")
 resp = []
@@ -28,7 +28,7 @@ app = Flask(__name__, static_url_path="")
 
 @app.route("/")
 def main():
-    global source, start_time, end_time
+    global source, start_time, end_time, search_type, classification
     source = [
         'checked="true"',
         'checked="true"',
@@ -38,12 +38,29 @@ def main():
     ]
     start_time = ""
     end_time = (datetime.date.today()).strftime("%Y-%m-%d")
+    search_type = ['','selected="selected"']
+    classification = [
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+        'checked="true"',
+    ]
+
     return render_template(
         "search.html",
         error=True,
         start_time=start_time,
         end_time=end_time,
         source=source,
+        search_type=search_type,
+        classification=classification
     )
 
 
@@ -51,27 +68,43 @@ def main():
 @app.route("/search/", methods=["POST"])
 def search_action():
     try:
-        global keywords, start_time, end_time, source, checked
+        global keywords, start_time, end_time, source, search_type, classification
         keywords = request.form["key_word"]
         start_time = request.form["start_time"]
         end_time = request.form["end_time"]
+        search_type = request.form["searchtype"]
         sourcelist = ["foxnews", "apnews", "chinadaily", "usatoday", "globaltimes"]
         source = []
+        classlist = ["OTHERS", "CRIME", "ENTERTAINMENT", "POLITICS", "SPORTS", "BUSINESS",
+                    "TRAVEL", "WELLNESS", "FOOD & DRINK", "SCIENCE & TECH", "ARTS & CULTURE"]
+        cls = []
+        src = []
         for item in sourcelist:
             try:
                 check = request.form[item]
                 source.append('checked="true"')
+                src.append(item)
             except:
                 source.append("")
                 continue
 
-        checked = ['checked="true"', "", ""]
+        classification = []
+        for item in classlist:
+            try:
+                check = request.form[item]
+                classification.append('checked="true"')
+                cls.append(item)
+            except:
+                classification.append("")
+                continue
 
         if keywords not in [""]:
-            # 这里等待api改成list
-            # docs = search(keywords, source, start_time, end_time)
-            s = sourcelist[0]
-            docs = boolean_search(keywords, s, start_time, end_time)
+            if search_type == 'boolean search':
+                docs = boolean_search(keywords, src, start_time, end_time, cls=cls)
+            elif search_type == 'ranked search':
+                docs = rank_search(keywords, src, start_time, end_time, cls=cls)
+            else:
+                return render_template("search.html", error=False)
             global resp, page
             resp = []
             for doc in docs:
@@ -96,8 +129,7 @@ def search_action():
                 page.append(i)
             docs = cut_page(page, 0, resp)
             return render_template(
-                "high_search.html",
-                checked=checked,
+                "search.html",
                 key=keywords,
                 docs=docs,
                 page=page,
@@ -105,6 +137,8 @@ def search_action():
                 error=True,
                 start_time=start_time,
                 end_time=end_time,
+                search_type=search_type,
+                classification=classification
             )
         else:
             return render_template("search.html", error=False)
@@ -115,12 +149,11 @@ def search_action():
 @app.route("/search/page/<page_no>/", methods=["GET"])
 def next_page(page_no):
     try:
-        global checked, keywords, page, source, resp
+        global keywords, page, source, resp, search_type, classification
         page_no = int(page_no)
         docs = cut_page(page, (page_no - 1), resp)
         return render_template(
-            "high_search.html",
-            checked=checked,
+            "search.html",
             key=keywords,
             docs=docs,
             page=page,
@@ -128,6 +161,8 @@ def next_page(page_no):
             error=True,
             start_time=start_time,
             end_time=end_time,
+            search_type=search_type,
+            classification=classification
         )
     except:
         print("next error")
@@ -151,57 +186,57 @@ def cut_page(page, no, news):
     return docs
 
 
-@app.route("/search/<key>/", methods=["POST"])
-def high_search(key):
-    try:
-        global checked, keywords, start_time, end_time, resp, page
-        selected = int(request.form["order"])
-        for i in range(3):
-            if i == selected:
-                checked[i] = 'checked="true"'
-            else:
-                checked[i] = ""
-
-        keywords = key
-        # 排序，按照Boolean、Date、Ranked,等待修改api
-        # docs = search_rank(keywords, source, start_time, end_time, checked)
-        s = source[0]
-        docs = boolean_search(keywords, s, start_time, end_time)
-        resp = []
-        for doc in docs:
-            if len(doc[2]) >= 300:
-                snippet = doc[2][0:300]
-            else:
-                snippet = doc[2]
-            resp.append(
-                {
-                    "id": doc[0],
-                    "title": doc[1],
-                    "content": doc[2],
-                    "snippet": snippet + "……",
-                    "source": doc[3],
-                    "date": doc[4],
-                    "url": doc[5],
-                    "class": doc[6],
-                }
-            )
-        page = []
-        for i in range(1, (len(resp) // 20 + 2)):
-            page.append(i)
-        docs = cut_page(page, 0, resp)
-        return render_template(
-            "high_search.html",
-            checked=checked,
-            key=keywords,
-            docs=docs,
-            page=page,
-            source=source,
-            error=True,
-            start_time=start_time,
-            end_time=end_time,
-        )
-    except:
-        print("high search error")
+# @app.route("/search/<key>/", methods=["POST"])
+# def high_search(key):
+#     try:
+#         global checked, keywords, start_time, end_time, resp, page
+#         selected = int(request.form["order"])
+#         for i in range(3):
+#             if i == selected:
+#                 checked[i] = 'checked="true"'
+#             else:
+#                 checked[i] = ""
+#
+#         keywords = key
+#         # 排序，按照Boolean、Date、Ranked,等待修改api
+#         # docs = search_rank(keywords, source, start_time, end_time, checked)
+#         s = source[0]
+#         docs = boolean_search(keywords, s, start_time, end_time)
+#         resp = []
+#         for doc in docs:
+#             if len(doc[2]) >= 300:
+#                 snippet = doc[2][0:300]
+#             else:
+#                 snippet = doc[2]
+#             resp.append(
+#                 {
+#                     "id": doc[0],
+#                     "title": doc[1],
+#                     "content": doc[2],
+#                     "snippet": snippet + "……",
+#                     "source": doc[3],
+#                     "date": doc[4],
+#                     "url": doc[5],
+#                     "class": doc[6],
+#                 }
+#             )
+#         page = []
+#         for i in range(1, (len(resp) // 20 + 2)):
+#             page.append(i)
+#         docs = cut_page(page, 0, resp)
+#         return render_template(
+#             "high_search.html",
+#             checked=checked,
+#             key=keywords,
+#             docs=docs,
+#             page=page,
+#             source=source,
+#             error=True,
+#             start_time=start_time,
+#             end_time=end_time,
+#         )
+#     except:
+#         print("high search error")
 
 
 #######################################################################################################################

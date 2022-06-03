@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <title>News Search Engine</title>
     <style type="text/css">
         * {
@@ -50,14 +51,14 @@
         .middle {
             text-align: center;
             margin: 0 auto;
-            width: 800px;
+            width: 1200px;
             height: auto;
         }
 
         .center {
             text-align: left;
             margin: 0 auto;
-            width: 1200px;
+            width: 850px;
             height: auto;
 
         }
@@ -208,6 +209,73 @@
             padding-bottom:25px;
             color:#008000;
         }
+
+
+        * {
+            box-sizing: border-box;
+        }
+        a {
+            text-decoration: none;
+            color: #379937;
+        }
+        body {
+            margin: 20px;
+        }
+        .dropdown {
+            position: relative;
+            font-size: 14px;
+            color: #333;
+        }
+        .dropdown .dropdown-list {
+            padding: 12px;
+            background: #fff;
+            position: absolute;
+            top: 30px;
+            left: 2px;
+            right: 2px;
+            box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.15);
+            transform-origin: 50% 0;
+            transform: scale(1, 0);
+            transition: transform .15s ease-in-out .15s;
+            max-height: 66vh;
+            overflow-y: scroll;
+        }
+        .dropdown .dropdown-option {
+            display: block;
+            padding: 8px 12px;
+            opacity: 0;
+            transition: opacity .15s ease-in-out;
+        }
+        .dropdown .dropdown-label {
+            display: block;
+            height: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 3px 3px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .dropdown .dropdown-label:before {
+            content: '▼';
+            float: right;
+        }
+        .dropdown.on .dropdown-list {
+            transform: scale(1, 1);
+            transition-delay: 0s;
+        }
+        .dropdown.on .dropdown-list .dropdown-option {
+            opacity: 1;
+            transition-delay: .2s;
+        }
+        .dropdown.on .dropdown-label:before {
+            content: '▲';
+        }
+        .dropdown [type="checkbox"] {
+            position: relative;
+            top: -1px;
+            margin-right: 4px;
+        }
+
     </style>
 </head>
 <body>
@@ -215,7 +283,7 @@
         <div id="header" class="middle">
             <h1 class="title-init">News Search</h1>
             <form name="search" action="/search/" method="POST">
-                <div>
+                <div id="searchbox" class="center">
                     {% if key %}
                         <table style="width:100%;border:none;">
                             <tr>
@@ -233,16 +301,92 @@
                     {% endif %}
                 </div>
                 <div>
+                    <div class="dropdown" style="width:40px; height:20px;float:left;"> source:</div>
+                    <div class="dropdown" data-control="checkbox-dropdown" style="width:180px; height:20px;float:left;margin-left:10px;">
+
+                        <label class="dropdown-label">Source select</label>
+                            <div class="dropdown-list">
+                                <a href="#" data-toggle="check-all" class="dropdown-option">Check All</a>
+
+                                <label class="dropdown-option">
+                                    <input {{source[0]}} type="checkbox" name="foxnews" value="foxnews" /> foxnews
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{source[1]}} type="checkbox" name="apnews" value="apnews" /> apnews
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{source[2]}} type="checkbox" name="chinadaily" value="chinadaily" /> chinadaily
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{source[3]}} type="checkbox" name="usatoday" value="usatoday" /> usatoday
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{source[4]}} type="checkbox" name="globaltimes" value="globaltimes" /> globaltimes
+                                </label>
+
+                            </div>
+                    </div>
+                    <div class="dropdown" style="float:left;margin-left:10px;">
                     start time：<input id="start_time" type="date" name="start_time" value={{start_time}} />
+                    </div>
+                    <div class="dropdown" style="float:left;margin-left:10px;">
                     end time：<input id="end_time"type="date" name="end_time" value={{end_time}} />
-                    <br>
-                    source:
-                    <input {{source[0]}} type="checkbox" name="foxnews" id="s1" value="foxnews" >Fox News
-                    <input {{source[1]}} type="checkbox" name="apnews" id="s2" value="apnews" >AP News
-                    <input {{source[2]}} type="checkbox" name="chinadaily" id="s3" value="chinadaily" >China Daily
-                    <input {{source[3]}} type="checkbox" name="usatoday" id="s4" value="source" >USA today
-                    <input {{source[4]}} type="checkbox" name="globaltimes" id="s5" value="source" >Global Times
+                    </div>
+
+                    <div class="dropdown" style="width:40px; height:20px;float:left;margin-left:10px;"> class:</div>
+                    <div class="dropdown" data-control="checkbox-dropdown" style="width:220px; height:20px;float:left;margin-left:10px;">
+                        <label class="dropdown-label">Class select</label>
+                            <div class="dropdown-list">
+                                <a href="#" data-toggle="check-all" class="dropdown-option">Check All</a>
+                                <label class="dropdown-option">
+                                    <input {{classification[0]}} type="checkbox" name="OTHERS" value="OTHERS" /> OTHERS
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[1]}} type="checkbox" name="CRIME" value="CRIME" /> CRIME
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[2]}} type="checkbox" name="ENTERTAINMENT" value="ENTERTAINMENT" /> ENTERTAINMENT
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[3]}} type="checkbox" name="POLITICS" value="POLITICS" /> POLITICS
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[4]}} type="checkbox" name="SPORTS" value="SPORTS" /> SPORTS
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[5]}} type="checkbox" name="BUSINESS" value="BUSINESS" /> BUSINESS
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[6]}} type="checkbox" name="TRAVEL" value="TRAVEL" /> TRAVEL
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[7]}} type="checkbox" name="WELLNESS" value="WELLNESS" /> WELLNESS
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[8]}} type="checkbox" name="FOOD & DRINK" value="FOOD & DRINK" /> FOOD & DRINK
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[9]}} type="checkbox" name="SCIENCE & TECH" value="SCIENCE & TECH" /> SCIENCE & TECH
+                                </label>
+                                <label class="dropdown-option">
+                                    <input {{classification[10]}} type="checkbox" name="ARTS & CULTURE" value="ARTS & CULTURE" /> ARTS & CULTURE
+                                </label>
+
+                            </div>
+                    </div>
+
+                    <div class="dropdown" style="float:left;margin-left:10px;">
+                    search type：
+                        <select id="searchtype" name="searchtype" required="" >
+                            <option value ="boolean search" {{search_type[0]}}>boolean search</option>
+                            <option value ="ranked search" {{search_type[1]}}>ranked search</option>
+                        </select>
+                    </div>
+
                 </div>
+                <br>
+
+
             </form>
         </div>
         <br>
@@ -260,7 +404,7 @@
                         <div>
                             <p class="p.content"> {{ doc.snippet }}</p>
                         </div>
-<!--                    <p class="cite"> <a href="{{ doc.url }}" style="white-space:nowrap" target="_blank">{{ doc.url }}</a></p>-->
+
                         <p style="color:#0e8d54"> <a href="{{ doc.url }}" style="white-space:nowrap" target="_blank" >{{ doc.url }}</a></p>
                     </div>
                 <br/>
@@ -278,19 +422,95 @@
         </div>
     </div>
 </body>
-<!--    <script type="text/javascript">-->
-<!--        var start = document.getElementById("end_time");-->
-<!--        var date = new Date();-->
-<!--        var month_t = date.getMonth().toString();-->
-<!--        if (date.getMonth() + 1 < 10)-->
-<!--            month_t = '0' + (date.getMonth() + 1);-->
+	<script type="text/javascript">
+        (function($) {
+            var CheckboxDropdown = function(el) {
+                var _this = this;
+                this.isOpen = false;
+                this.areAllChecked = false;
+                this.$el = $(el);
+                this.$label = this.$el.find('.dropdown-label');
+                this.$checkAll = this.$el.find('[data-toggle="check-all"]').first();
+                this.$inputs = this.$el.find('[type="checkbox"]');
 
-<!--        var day_t = date.getDate().toString();-->
-<!--        if (date.getDate() < 10)-->
-<!--            day_t = '0' + (date.getDate() + 1)-->
+                this.onCheckBox();
 
-<!--        var dateString = date.getFullYear() + "-" + (month_t) + "-" + day_t;-->
-<!--        start.value = dateString;-->
-<!--    </script>-->
+                this.$label.on('click', function(e) {
+                    e.preventDefault();
+                    _this.toggleOpen();
+                });
+
+                this.$checkAll.on('click', function(e) {
+                    e.preventDefault();
+                    _this.onCheckAll();
+                });
+
+                this.$inputs.on('change', function(e) {
+                    _this.onCheckBox();
+                });
+            };
+
+            CheckboxDropdown.prototype.onCheckBox = function() {
+                this.updateStatus();
+            };
+
+            CheckboxDropdown.prototype.updateStatus = function() {
+                var checked = this.$el.find(':checked');
+
+                this.areAllChecked = false;
+                this.$checkAll.html('Check All');
+
+                if (checked.length <= 0) {
+                    this.$label.html('Source Select');
+                } else if (checked.length === 1) {
+                    this.$label.html(checked.parent('label').text());
+                } else if (checked.length === this.$inputs.length) {
+                    this.$label.html('All Selected');
+                    this.areAllChecked = true;
+                    this.$checkAll.html('Uncheck All');
+                } else {
+                    this.$label.html(checked.length + ' Selected');
+                }
+            };
+
+            CheckboxDropdown.prototype.onCheckAll = function(checkAll) {
+                if (!this.areAllChecked || checkAll) {
+                    this.areAllChecked = true;
+                    this.$checkAll.html('Uncheck All');
+                    this.$inputs.prop('checked', true);
+                } else {
+                    this.areAllChecked = false;
+                    this.$checkAll.html('Check All');
+                    this.$inputs.prop('checked', false);
+                }
+
+                this.updateStatus();
+            };
+
+            CheckboxDropdown.prototype.toggleOpen = function(forceOpen) {
+                var _this = this;
+
+                if (!this.isOpen || forceOpen) {
+                    this.isOpen = true;
+                    this.$el.addClass('on');
+                    $(document).on('click', function(e) {
+                        if (!$(e.target).closest('[data-control]').length) {
+                            _this.toggleOpen();
+                        }
+                    });
+                } else {
+                    this.isOpen = false;
+                    this.$el.removeClass('on');
+                    $(document).off('click');
+                }
+            };
+
+            var checkboxesDropdowns = document.querySelectorAll('[data-control="checkbox-dropdown"]');
+            for (var i = 0, length = checkboxesDropdowns.length; i < length; i++) {
+                new CheckboxDropdown(checkboxesDropdowns[i]);
+            }
+        })(jQuery);
+	</script>
+
 
 </html>
