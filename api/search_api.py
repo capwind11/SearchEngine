@@ -38,7 +38,7 @@ def main():
     ]
     start_time = ""
     end_time = (datetime.date.today()).strftime("%Y-%m-%d")
-    search_type = ['','selected="selected"']
+    search_type = ['selected="selected"', '']
     classification = [
         'checked="true"',
         'checked="true"',
@@ -70,14 +70,17 @@ def search_action():
     try:
         global keywords, start_time, end_time, source, search_type, classification
         keywords = request.form["key_word"]
+        # keywords = "\"{}\"".format(key)
         start_time = request.form["start_time"]
         end_time = request.form["end_time"]
-        search_type = request.form["searchtype"]
+        searchtype = request.form["searchtype"]
+        if searchtype == "boolean search":
+            search_type = ['selected="selected"', '']
+        elif searchtype == "ranked search":
+            search_type = ['', 'selected="selected"']
+
         sourcelist = ["foxnews", "apnews", "chinadaily", "usatoday", "globaltimes"]
         source = []
-        classlist = ["OTHERS", "CRIME", "ENTERTAINMENT", "POLITICS", "SPORTS", "BUSINESS",
-                    "TRAVEL", "WELLNESS", "FOOD & DRINK", "SCIENCE & TECH", "ARTS & CULTURE"]
-        cls = []
         src = []
         for item in sourcelist:
             try:
@@ -87,7 +90,9 @@ def search_action():
             except:
                 source.append("")
                 continue
-
+        classlist = ["OTHERS", "CRIME", "ENTERTAINMENT", "POLITICS", "SPORTS", "BUSINESS",
+                    "TRAVEL", "WELLNESS", "FOOD & DRINK", "SCIENCE & TECH", "ARTS & CULTURE"]
+        cls = []
         classification = []
         for item in classlist:
             try:
@@ -99,9 +104,9 @@ def search_action():
                 continue
 
         if keywords not in [""]:
-            if search_type == 'boolean search':
+            if searchtype == 'boolean search':
                 docs = boolean_search(keywords, src, start_time, end_time, cls=cls)
-            elif search_type == 'ranked search':
+            elif searchtype == 'ranked search':
                 docs = rank_search(keywords, src, start_time, end_time, cls=cls)
             else:
                 return render_template("search.html", error=False)
@@ -124,24 +129,42 @@ def search_action():
                         "class": doc[6],
                     }
                 )
+
             page = []
             for i in range(1, (len(resp) // 20 + 2)):
                 page.append(i)
             docs = cut_page(page, 0, resp)
-            return render_template(
-                "search.html",
-                key=keywords,
-                docs=docs,
-                page=page,
-                source=source,
-                error=True,
-                start_time=start_time,
-                end_time=end_time,
-                search_type=search_type,
-                classification=classification
+
+            if not resp:
+                return render_template("search.html",
+                                       start_time=start_time,
+                                       end_time=end_time,
+                                       source=source,
+                                       search_type=search_type,
+                                       classification=classification,
+                                       error=False)
+            else:
+                return render_template(
+                    "search.html",
+                    keywords=keywords,
+                    docs=docs,
+                    page=page,
+                    source=source,
+                    error=True,
+                    start_time=start_time,
+                    end_time=end_time,
+                    search_type=search_type,
+                    classification=classification
             )
         else:
-            return render_template("search.html", error=False)
+            return render_template("search.html",
+                                   # error=True,
+                                   start_time=start_time,
+                                   end_time=end_time,
+                                   source=source,
+                                   search_type=search_type,
+                                   classification=classification,
+                                   error=False)
     except:
         print("search error")
 
@@ -149,12 +172,12 @@ def search_action():
 @app.route("/search/page/<page_no>/", methods=["GET"])
 def next_page(page_no):
     try:
-        global keywords, page, source, resp, search_type, classification
+        global keywords, page, source, resp, start_time, end_time, search_type, classification
         page_no = int(page_no)
         docs = cut_page(page, (page_no - 1), resp)
         return render_template(
             "search.html",
-            key=keywords,
+            keywords=keywords,
             docs=docs,
             page=page,
             source=source,

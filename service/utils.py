@@ -5,12 +5,19 @@ import string
 # 用于构建倒排索引时，进行去除标点和数字等预处理操作
 from datetime import datetime
 
+import nltk
 from nltk import pos_tag
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 
 from entity.global_entity import global_db
+
+nltk.download("omw-1.4")
+nltk.download("wordnet")
+nltk.download("averaged_perceptron_tagger")
+wnl = WordNetLemmatizer()
+porter_stemmer = PorterStemmer()
 
 punc_dicts = {i: " " for i in string.punctuation}
 num_dicts = {i: "" for i in "0123456789"}
@@ -146,10 +153,6 @@ def transform_postfix(infix):
     return postfix
 
 
-wnl = WordNetLemmatizer()
-porter_stemmer = PorterStemmer()
-
-
 def get_wordnet_pos(tag):
     if tag.startswith("J"):
         return wordnet.ADJ
@@ -198,3 +201,7 @@ def search_by_specific_info(
             if res:
                 docs += res
     return docs
+
+
+def test_lemmatize_stem_word():
+    lemmatize_stem_word("hello")

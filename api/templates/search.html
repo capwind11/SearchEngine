@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -60,7 +60,12 @@
             margin: 0 auto;
             width: 850px;
             height: auto;
-
+        }
+        .center2 {
+            text-align: left;
+            margin: 0 auto;
+            width: 1000px;
+            height: auto;
         }
 
         .info {
@@ -70,7 +75,7 @@
             padding: 40px;
         }
 
-        .info a {
+        .info-a {
             text-align: left;
             margin: 0 10px;
             text-decoration: none;
@@ -127,69 +132,78 @@
             color: #222;
         }
 
-        .copyright {
-            color: #666;
-            text-align: center;
-        }
+        /*.copyright {*/
+        /*    color: #666;*/
+        /*    text-align: center;*/
+        /*}*/
 
-        .queryForm {
-            background-color: #f1f1f1;
-            border-bottom: 1px solid #666;
-            border-color: #e5e5e5;
-            padding: 0 20px;
-        }
+        /*.queryForm {*/
+        /*    background-color: #f1f1f1;*/
+        /*    border-bottom: 1px solid #666;*/
+        /*    border-color: #e5e5e5;*/
+        /*    padding: 0 20px;*/
+        /*}*/
 
         .result-item {
             padding: 10px 10px 10px 40px;
         }
 
-        #tads a, #tadsb a, #res a, #rhs a, #taw a {
-            text-decoration: none;
-        }
+        /*#tads a, #tadsb a, #res a, #rhs a, #taw a {*/
+        /*    text-decoration: none;*/
+        /*}*/
 
-        a:link {
-            cursor: pointer;
-        }
+        /*a:link {*/
+        /*    cursor: pointer;*/
+        /*}*/
 
-        a:link, #prs a:visited, #prs a:active {
-            color: #353535;
-        }
+        /*a:link, #prs a:visited, #prs a:active {*/
+        /*    color: #353535;*/
+        /*}*/
 
-        .cite {
-            color: #006621;
+        /*.cite {*/
+        /*    color: #006621;*/
+        /*    font-style: normal;*/
+        /*    font-size: small;*/
+        /*    line-height: 18px;*/
+        /*}*/
+        .hyperlink {
+            /*text-align: left;*/
+            /*margin: 0 10px;*/
+            /*text-decoration: none;*/
+            color: green;
             font-style: normal;
             font-size: small;
             line-height: 18px;
         }
 
-        .item-url {
-            text-decoration: none;
-        }
+        /*.item-url {*/
+        /*    text-decoration: none;*/
+        /*}*/
 
-        .item-content {
-            color: #545454;
-            font-size: small;
-            line-height: 16px;
-        }
+        /*.item-content {*/
+        /*    color: #545454;*/
+        /*    font-size: small;*/
+        /*    line-height: 16px;*/
+        /*}*/
 
-        #resultStats {
-            line-height: 43px;
-            -webkit-transition: all 220ms ease-in-out;
-            color: #808080;
-            padding: 0 8px 0 16px;
-            font-size: small;
-        }
+        /*#resultStats {*/
+        /*    line-height: 43px;*/
+        /*    -webkit-transition: all 220ms ease-in-out;*/
+        /*    color: #808080;*/
+        /*    padding: 0 8px 0 16px;*/
+        /*    font-size: small;*/
+        /*}*/
 
-        .copyright {
-            color: #666;
-            text-align: center;
-        }
+        /*.copyright {*/
+        /*    color: #666;*/
+        /*    text-align: center;*/
+        /*}*/
 
-        .middle-search {
-            text-align: center;
-            margin: 0 auto;
-            height: auto;
-        }
+        /*.middle-search {*/
+        /*    text-align: center;*/
+        /*    margin: 0 auto;*/
+        /*    height: auto;*/
+        /*}*/
         p{
             margin:0px;
             font-family:Arial;
@@ -214,10 +228,10 @@
         * {
             box-sizing: border-box;
         }
-        a {
-            text-decoration: none;
-            color: #379937;
-        }
+        /*a {*/
+        /*    text-decoration: none;*/
+        /*    color: #379937;*/
+        /*}*/
         body {
             margin: 20px;
         }
@@ -284,11 +298,11 @@
             <h1 class="title-init">News Search</h1>
             <form name="search" action="/search/" method="POST">
                 <div id="searchbox" class="center">
-                    {% if key %}
+                    {% if keywords %}
                         <table style="width:100%;border:none;">
                             <tr>
-                                <td><input type="text" name="key_word" value={{key}} class="searchText"/></td>
-                                <td><input type="submit" value="search" class="searchBtn"/></td>
+                                <td><input type="text" name="key_word" value="{{keywords}}" class="searchText"/></td>
+                                <td><input type="submit" name="search_button" value="search" class="searchBtn"/></td>
                             </tr>
                         </table>
                      {% else %}
@@ -382,30 +396,25 @@
                             <option value ="ranked search" {{search_type[1]}}>ranked search</option>
                         </select>
                     </div>
-
                 </div>
-                <br>
-
-
             </form>
+            <br>
         </div>
         <br>
         <hr/>
         <br>
-        <div id="results" class="center">
-            {% block high_search%}
-            {% endblock %}
+        <div id="results" class="center2">
             {% if error%}
                 {% for doc in docs%}
-                    <div class=".result-item" data-hveid="27">
-<!--                        <h3 style="color:#2910ab"><a href="/search/{{doc.id}}/" target="_blank" class="item-url"> {{doc.title}}</a></h3>-->
-                        <p class="title" style="color:#2440b3"><a href="/search/{{doc.id}}/" target="_blank">{{doc.title}}</a></p>
+                    <div class="result-item" data-hveid="27">
+                        <span v-html="brightenKeyword(text,{{keywords}}">
+                        <p class="title" ><a href="/search/{{doc.id}}/" target="_blank">  {{doc.title}}</a></p>
                         <p style="color:#545454">date:{{doc.date}} &nbsp; source:{{doc.source}} &nbsp; class:{{doc.class}}<br/></p>
                         <div>
                             <p class="p.content"> {{ doc.snippet }}</p>
                         </div>
-
-                        <p style="color:#0e8d54"> <a href="{{ doc.url }}" style="white-space:nowrap" target="_blank" >{{ doc.url }}</a></p>
+                        <p class="hyperlink"> <a href="{{ doc.url }}" style="white-space:nowrap" target="_blank" >{{ doc.url }}</a></p>
+                        </span>
                     </div>
                 <br/>
                 {% endfor %}
@@ -417,7 +426,7 @@
             </ul>
             {% endblock %}
             {% else %}
-                <p>对不起，没有您搜索的网页！</p>
+                <p>Sorry，No News Found！</p>
             {% endif %}
         </div>
     </div>
@@ -511,6 +520,26 @@
             }
         })(jQuery);
 	</script>
+
+    <script>
+        $('#key_word').bind('keyup', function(event) {
+            if (event.keyCode == "13") {
+                //回车执行查询
+                $('#search_button').click();
+            }
+        });
+    </script>
+
+    <script>
+       var content = document.getElementById("results");
+       var contents = content.innerHTML;
+       var text = "{{keywords}}";
+       if(text!=null&&contents!=null){
+        var substr="/"+text+"/g";
+        var replaceStr=contents.replace(eval(substr),"<span style='color:red;'>"+text+"</span>")
+        content.innerHTML=replaceStr;}
+
+    </script>
 
 
 </html>
