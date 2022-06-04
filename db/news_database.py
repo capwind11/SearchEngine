@@ -51,6 +51,7 @@ class NewsDB:
     def query_specific(self, doc_ids, date_begin, date_end, source, cls):
         ids_str = ",".join(str(doc_id) for doc_id in doc_ids)
         sql = "select * from news where id in (" + ids_str + ")"
+        cls.append("")
         if cls:
             sql += " and cls in ('{}')".format("','".join(cls))
         if source:

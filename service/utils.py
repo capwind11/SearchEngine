@@ -25,27 +25,32 @@ punc_table = str.maketrans(punc_dicts)
 num_table = str.maketrans(num_dicts)
 
 
-def upload_news(path=""):
+def reconstruct_news(path=""):
+    download_news()
     if not path:
-        path = os.path.dirname(__file__) + "/../entity/news.json"
+        path = os.path.dirname(__file__) + "/../db/news.json"
     f = open(path, "r")
     news = json.load(f)
 
-    path = os.path.dirname(__file__) + "/../entity/pred.txt"
-    f = open(path, "r")
-    cls = [line.strip() for line in f.readlines()]
+    path = os.path.dirname(__file__) + "/../db/pred.txt"
+    if os.path.exists(path):
+        f = open(path, "r")
+        cls = [line.strip() for line in f.readlines()]
+    else:
+        cls = [""]*len(news)
     global_db.create_news_table()
     global_db.create_index_table()
     for i, doc in enumerate(news):
         global_db.insert_news(
             doc["title"], doc["time"], doc["content"], doc["source"], doc["url"], cls[i]
         )
+    download_news()
 
 
 # 从sql中加载新闻保存到本地json
 def download_news(path=""):
     if not path:
-        path = os.path.dirname(__file__) + "/../entity/news.json"
+        path = os.path.dirname(__file__) + "/../db/news.json"
     docs = global_db.query_all_docs()
     f = open(path, "w", newline="\n")
     f.write("[")
@@ -72,7 +77,7 @@ def download_news(path=""):
 # 构建倒排索引
 def build_inverted_index(path=""):
     if not path:
-        path = os.path.dirname(__file__) + "/../entity/news.json"
+        path = os.path.dirname(__file__) + "/../db/news.json"
     f = open(path, "r")
     news = json.load(f)
     indexes = {}
@@ -92,7 +97,7 @@ def build_inverted_index(path=""):
     for k, v in indexes:
         inverted_index[k] = v
     del indexes
-    with open(os.path.dirname(__file__) + "/../entity/inverted_index.json", "w") as f:
+    with open(os.path.dirname(__file__) + "/../db/inverted_index.json", "w") as f:
         json.dump(inverted_index, f, indent=1)
     index = []
     for k, v in inverted_index.items():
@@ -104,7 +109,7 @@ def build_inverted_index(path=""):
 # 加载倒排索引
 def load_inverted_index(path=""):
     if not path:
-        path = os.path.dirname(__file__) + "/../entity/inverted_index.json"
+        path = os.path.dirname(__file__) + "/../db/inverted_index.json"
     with open(path, "r") as f:
         index = json.load(f)
     return index

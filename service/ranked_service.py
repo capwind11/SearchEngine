@@ -22,12 +22,12 @@ def process_tfidf():
     # According to lecture slides, TF-iDF for documents should be LNC
     vectorizer_LNC = TfidfVectorizer(norm="l2", use_idf=False)
     X = vectorizer_LNC.fit_transform(contents)
-    joblib.dump(X, f"../db/tfidf_LNC_dim{X.shape[1]}.pkl")
+    joblib.dump(X, os.path.join(os.path.dirname(__file__), "../db/tfidf_LNC.pkl"))
     # TF-iDF for query should be LTC, so we dump the LTC vectorizer
     # for future usage
     vectorizer_LTC = TfidfVectorizer(norm="l2", use_idf=True)
     vectorizer_LTC.fit(contents)
-    joblib.dump(vectorizer_LTC, "../db/tfidf_LTC_vectorizer.pkl")
+    joblib.dump(vectorizer_LTC, os.path.join(os.path.dirname(__file__), "../db/tfidf_LTC_vectorizer.pkl"))
 
 
 def get_ranked_ids(query, ids=None, minimum_hits=0):
@@ -50,7 +50,7 @@ def get_ranked_ids(query, ids=None, minimum_hits=0):
     """
     # sparse matrix
     tfidf = joblib.load(
-        os.path.join(os.path.dirname(__file__), "../db/tfidf_LNC_dim62504.pkl")
+        os.path.join(os.path.dirname(__file__), "../db/tfidf_LNC.pkl")
     )
     # search from the given ids
     if ids is not None:
@@ -89,7 +89,7 @@ def rank_search(
 ):
     if len(keywords) == 0:
         return None
-    doc_ids = [i + 1 for i in get_ranked_ids(keywords)[:1000]]
+    doc_ids = [i + 1 for i in get_ranked_ids(keywords)[:200]]
 
     return search_by_specific_info(
         doc_ids, source, date_begin, date_end, interval, cls, True

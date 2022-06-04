@@ -23,12 +23,12 @@ def boolean_search(
     for elem in postfix:
         if elem != "|" and elem != "&":
             if elem[0] == "-":
-                word = lemmatize_stem_word(elem[1:])
+                word = lemmatize_stem_word(str.lower(elem[1:]))
                 stk.append(
                     all_doc_ids.difference(global_db.query_doc_ids_by_word(word))
                 )
             else:
-                word = lemmatize_stem_word(elem)
+                word = lemmatize_stem_word(str.lower(elem))
                 stk.append(global_db.query_doc_ids_by_word(word))
         elif elem == "|":
             tmp = stk[-1].union(stk[-2])

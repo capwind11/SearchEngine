@@ -1,14 +1,18 @@
-## 爬虫
+# Tutorial
 
-执行crawler/crawler中crawl.py文件，一共可爬到18000多条新闻
+## 1. Crawl the news
+The first time to run the application, you have to crawl news.
 
-## 搜索
+You have to enter the folder `crawler/crawler/` and run the file
+crawl.py.
 
-- 执行main.py
-- 两个简易api
-    - boolean search 目前只支持连续的&&查询
-        - http://localhost:5000/api/boolean?keyword={空格连接的关键词}
-        - 比如: http://localhost:5000/api/boolean?keyword=senior_official
-    - specific search 目前只支持根据日期和新闻源查询
-        - http://localhost:5000/api/specific?date={日期}&source={媒体源}
-        - 比如: http://localhost:5000/api/specific?date=2020-11-03&source=globaltimes
+## 2. Build and Run the application
+
+run the main.py
+
+if you are the first time to run, 
+you should uncomment the statement to execute the function init_data().
+
+`init_data()` is used to generate inverted indexes and necessary data like tf-idf, categories for news items.
+
+**Note**: If you need to classify the news item, please specify the key `weights_path` and `device` in a dict and pass the dict to the `init_data` function. Concretely, `weights_path` is the weight checkpoint of the BERT model. You can download our pretrained weights from the link mentioned in the report. `device` is the device (e.g., `cpu` or `cuda:0`) to run the classification process.

@@ -1,4 +1,5 @@
 import re
+import os
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -81,7 +82,8 @@ class BERT(nn.Module):
     def __init__(self, num_classes=11):
         super(BERT, self).__init__()
         self.tokenizer = BertTokenizer.from_pretrained(PRETRAINED_WEIGHTS)
-        self.bert = BertModel.from_pretrained(PRETRAINED_WEIGHTS, num_labels=num_classes)
+        self.bert = BertModel.from_pretrained(
+            PRETRAINED_WEIGHTS, num_labels=num_classes)
 
     def forward(self, x):
         ids, token_ids, att = x
@@ -109,7 +111,7 @@ def inference(model, test_loader, device):
     return pred_classes
 
 
-def classify_docs(weights_path, device):
+def classify_docs(weights_path, device, save=False):
     """
     Classify the documents into 11 pre-defined categories using BERT.
     The 11 categories are shown in `LABEL_MAP` on top of this script.
@@ -120,6 +122,7 @@ def classify_docs(weights_path, device):
             https://jbox.sjtu.edu.cn/l/h1PpOZ
         device: Specify the device to conduct classification. E.g.,
             'cpu` or 'cuda:0'.
+        save: Specify whether to save the category into a txt file.
 
     Returns:
         A list of strings indicates the category of each document.
@@ -134,4 +137,10 @@ def classify_docs(weights_path, device):
     test_loader = DataLoader(test_set, 32, False, num_workers=4)
     pred_classes = inference(model, test_loader, device)
     # output the predicted category for each document in DB
+    if save:
+        # save the prediction to the txt file.
+        with open(os.path.join(os.path.dirname(__file__), "../db/pred.txt"),
+                  "w", encoding="utf-8") as f:
+            for i in pred_classes:
+                f.write(f"{i}\n")
     return pred_classes
